@@ -11,6 +11,9 @@ COPY . .
 # Install package dependencies
 RUN uv sync --extra dev
 
+# Add the current directory to Python path
+ENV PYTHONPATH=/app
+
 # Train the model (the model is already trained, so this is not needed, but it's here for reference)
 # RUN python -m app.models.train
 
@@ -18,4 +21,4 @@ RUN uv sync --extra dev
 EXPOSE 8000
 
 # Command to run the application
-CMD ["uv", "run", "python", "app/main.py"]
+CMD ["uv", "run", "python", "-m", "app.main"]

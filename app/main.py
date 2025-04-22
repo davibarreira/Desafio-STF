@@ -4,7 +4,11 @@ from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-app = FastAPI()
+app = FastAPI(
+    title="STF Text Classification API",
+    description="API para classificação de textos jurídicos",
+    version="1.0.0"
+)
 
 
 class TextoRequest(BaseModel):
@@ -14,6 +18,20 @@ class TextoRequest(BaseModel):
 class RamoDireitoResponse(BaseModel):
     id: int
     ramo_direito: List[str]
+
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Bem-vindo à API de Classificação de Textos Jurídicos",
+        "endpoints": {
+            "classificar_texto": {
+                "path": "/api/pecas/{id}",
+                "method": "POST",
+                "description": "Utiliza uma modelo de Machine Learning que classifica o texto jurídico e retorna uma lista com ramos do direito."
+            }
+        }
+    }
 
 
 async def inferir_ramo_direito(texto: str) -> List[str]:

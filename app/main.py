@@ -7,7 +7,7 @@ from pydantic import BaseModel
 app = FastAPI(
     title="STF Text Classification API",
     description="API para classificação de textos jurídicos",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 
@@ -28,9 +28,9 @@ async def root():
             "classificar_texto": {
                 "path": "/api/pecas/{id}",
                 "method": "POST",
-                "description": "Utiliza uma modelo de Machine Learning que classifica o texto jurídico e retorna uma lista com ramos do direito."
+                "description": "Utiliza uma modelo de Machine Learning que classifica o texto jurídico e retorna uma lista com ramos do direito.",
             }
-        }
+        },
     }
 
 

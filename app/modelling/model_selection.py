@@ -12,13 +12,25 @@ from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 from tabulate import tabulate
+from xgboost import XGBClassifier
 
 # Configuration
 RANDOM_STATE = 42
 DATA_PATH = "data/2_pro/cleaned_dataset.parquet"
 
 
-def load_and_prepare_data(data_path=DATA_PATH):
+def load_and_prepare_data(
+    data_path: str = DATA_PATH,
+) -> tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    TfidfVectorizer,
+    MultiLabelBinarizer,
+]:
     """
     Load data and prepare it for model selection.
 
@@ -51,7 +63,7 @@ def load_and_prepare_data(data_path=DATA_PATH):
     return X_train, X_val, X_test, y_train, y_val, y_test, vectorizer, mlb
 
 
-def get_model_configurations():
+def get_model_configurations() -> list[dict]:
     """
     Define model configurations to test.
 
@@ -77,6 +89,20 @@ def get_model_configurations():
                 {"n_estimators": 200, "max_depth": 20, "random_state": RANDOM_STATE},
             ],
         },
+        {
+            "name": "XGBoost",
+            "class": XGBClassifier,
+            "configs": [
+                {
+                    "n_estimators": 100,
+                    "max_depth": 6,
+                    "learning_rate": 0.1,
+                    "random_state": RANDOM_STATE,
+                    "objective": "binary:logistic",
+                    "base_score": 0.5,
+                }
+            ],
+        },
     ]
 
 
@@ -99,16 +125,12 @@ def train_and_evaluate_model(model_class, config, X_train, y_train, X_val, y_val
     config_str = ", ".join(f"{k}={v}" for k, v in config.items() if k != "random_state")
     print(f"\nTraining {model_class.__name__} with {config_str}")
 
-    # Create and train model
     base_model = model_class(**config)
     model = MultiOutputClassifier(base_model)
     model.fit(X_train, y_train)
 
     # Evaluate on validation set
-    y_val_pred = model.predict(X_val)
-
-    # Handle rows with no predicted labels
-    handle_zero_prediction_rows(model, y_val_pred, X_val)
+    y_val_pred, _ = multi_label_prediction(model, X_val)
 
     # Calculate F1 score (samples average)
     f1 = f1_score(y_val, y_val_pred, average="samples")
@@ -117,36 +139,32 @@ def train_and_evaluate_model(model_class, config, X_train, y_train, X_val, y_val
     return model, f1, config_str
 
 
-def handle_zero_prediction_rows(model, y_pred, X):
+def multi_label_prediction(
+    model: MultiOutputClassifier, X: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
     """
-    For rows with no predicted labels, add the most likely label.
+    Predict multi-label values for a given feature matrix.
+    For rows with no predicted labels, add the most likely label based on probabilities.
 
-    Args:
-        model: Trained model
-        y_pred: Prediction array to modify in-place
-        X: Feature matrix used for predictions
+    Returns:
+        Tuple of (y_pred, y_pred_proba)
     """
-    if not hasattr(model, "predict_proba"):
-        return
+    y_pred_proba_list = [proba[:, 1] for proba in model.predict_proba(X)]
+    y_pred_proba = np.array(y_pred_proba_list).T
+    y_pred = model.predict(X)
 
-    # Find rows with no predicted labels
     zero_label_rows = np.sum(y_pred, axis=1) == 0
-    if not np.any(zero_label_rows):
-        return
+    if np.any(zero_label_rows):
+        probs_zero_rows = y_pred_proba[zero_label_rows]
+        most_likely_labels = np.argmax(probs_zero_rows, axis=1)
+        y_pred[zero_label_rows, most_likely_labels] = 1
 
-    # Get probabilities and find most likely labels
-    y_proba_list = [proba[:, 1] for proba in model.predict_proba(X)]
-    y_proba = np.array(y_proba_list).T
-
-    probs_zero_rows = y_proba[zero_label_rows]
-    most_likely_labels = np.argmax(probs_zero_rows, axis=1)
-
-    # Assign most likely labels
-    for i, row_idx in enumerate(np.where(zero_label_rows)[0]):
-        y_pred[row_idx, most_likely_labels[i]] = 1
+    return y_pred, y_pred_proba
 
 
-def evaluate_on_test_set(model, X_test, y_test):
+def evaluate_on_test_set(
+    model: MultiOutputClassifier, X_test: np.ndarray, y_test: np.ndarray
+) -> float:
     """
     Evaluate the best model on the test set.
 
@@ -158,8 +176,8 @@ def evaluate_on_test_set(model, X_test, y_test):
     Returns:
         F1 score on test set
     """
-    y_test_pred = model.predict(X_test)
-    handle_zero_prediction_rows(model, y_test_pred, X_test)
+    # Evaluate on validation set
+    y_test_pred, _ = multi_label_prediction(model, X_test)
     test_f1 = f1_score(y_test, y_test_pred, average="samples")
 
     print(f"\nTest Set Performance:")
@@ -168,7 +186,9 @@ def evaluate_on_test_set(model, X_test, y_test):
     return test_f1
 
 
-def save_best_model_config(best_config, test_f1, model_dir="models"):
+def save_best_model_config(
+    best_config: dict, test_f1: float, model_dir: str = "models"
+) -> None:
     """
     Save the best model configuration to disk.
 
@@ -191,7 +211,9 @@ def save_best_model_config(best_config, test_f1, model_dir="models"):
     print(f"\nBest model configuration saved to {model_dir}/best_model_config.json")
 
 
-def save_vectorizer_and_binarizer(vectorizer, mlb, model_dir="models"):
+def save_vectorizer_and_binarizer(
+    vectorizer: TfidfVectorizer, mlb: MultiLabelBinarizer, model_dir: str = "models"
+) -> None:
     """
     Save the vectorizer and multilabel binarizer to disk.
 
@@ -210,7 +232,7 @@ def save_vectorizer_and_binarizer(vectorizer, mlb, model_dir="models"):
         pickle.dump(mlb, f)
 
 
-def print_comparison_table(results):
+def print_comparison_table(results: list[dict]) -> None:
     """
     Print a formatted comparison table of model results.
 
@@ -223,7 +245,7 @@ def print_comparison_table(results):
     print(tabulate(table_data, headers=headers, tablefmt="grid"))
 
 
-def select_best_model():
+def select_best_model() -> dict:
     """
     Compare different models with different parameters and select the best one
     based on f1_samples metric.

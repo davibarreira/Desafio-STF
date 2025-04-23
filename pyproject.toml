@@ -13,6 +13,7 @@ dependencies = [
     "spacy>=3.8.5",
     "tqdm>=4.67.1",
     "uvicorn>=0.34.2",
+    "xgboost>=3.0.0",
 ]
 
 [dependency-groups]

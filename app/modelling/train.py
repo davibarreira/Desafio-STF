@@ -13,7 +13,9 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
 )
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.preprocessing import MultiLabelBinarizer
+from xgboost import XGBClassifier
+
+from .model_selection import multi_label_prediction
 
 
 def train_model(data_path: str = "data/2_pro/cleaned_dataset.parquet") -> dict:
@@ -59,6 +61,8 @@ def train_model(data_path: str = "data/2_pro/cleaned_dataset.parquet") -> dict:
         model_class = LogisticRegression
     elif model_type == "Random Forest":
         model_class = RandomForestClassifier
+    elif model_type == "XGBoost":
+        model_class = XGBClassifier
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 
@@ -74,16 +78,7 @@ def train_model(data_path: str = "data/2_pro/cleaned_dataset.parquet") -> dict:
         pickle.dump(model, f)
 
     # Get predictions for evaluation
-    y_pred_proba_list = [proba[:, 1] for proba in model.predict_proba(X)]
-    y_pred_proba = np.array(y_pred_proba_list).T
-    y_pred = model.predict(X)
-
-    # For rows with no predicted labels, add the most likely label
-    zero_label_rows = np.sum(y_pred, axis=1) == 0
-    if np.any(zero_label_rows):
-        probs_zero_rows = y_pred_proba[zero_label_rows]
-        most_likely_labels = np.argmax(probs_zero_rows, axis=1)
-        y_pred[zero_label_rows, most_likely_labels] = 1
+    y_pred, y_pred_proba = multi_label_prediction(model, X)
 
     # SANITY CHECK
     # Verify that the accuracy makes sense

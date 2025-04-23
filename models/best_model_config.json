@@ -1,10 +1,13 @@
 {
-  "model_type": "Logistic Regression",
+  "model_type": "XGBoost",
   "params": {
-    "C": 10.0,
-    "max_iter": 1000
+    "n_estimators": 100,
+    "max_depth": 6,
+    "learning_rate": 0.1,
+    "objective": "binary:logistic",
+    "base_score": 0.5
   },
   "performance": {
-    "f1_samples": 0.7681952188681663
+    "f1_samples": 0.7870377491508043
   }
 }

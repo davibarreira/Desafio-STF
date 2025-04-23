@@ -87,9 +87,7 @@ Retorna:
 
 Para obter predições se usa:
 ```bash
-curl -X POST "http://localhost:8000/api/pecas/1" \
-     -H "Content-Type: application/json" \
-     -d '{"texto": "AGRAVO EM RECURSO EXTRAORDINÁRIO. DIREITO CONSTITUCIONAL. DIREITO ADMINISTRATIVO. CONCURSO PÚBLICO. POLÍCIA MILITAR. ALTURA MÍNIMA. LEGALIDADE."}'
+ curl -X POST "http://localhost:8000/api/pecas/1" -H "Content-Type: application/json" -d '{"texto": "EDUCACAO E MUITO IMPORTANTE PROFESSOR EU SEI"}'
 ```
 
 Resposta esperada:

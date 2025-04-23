@@ -1,15 +1,22 @@
 # API - Classificando Textos Jurídicos
 
-API REST para classificação de textos de peças jurídicas no ramo do direito 
-correspondente (e.g., direito civil, penal, trabalhista, etc.).
+API para classificação de textos jurídicos em ramos do direito.
 
-## Estrutura do Projeto
-### Requisitos
+## Introdução
+Essa API foi desenvolvida para classificar textos jurídicos em diferentes ramos do direito brasileiro,
+através do uso de técnicas de processamento de linguagem natural (NLP) e aprendizado de máquina.
+A solução implementa um modelo de classificação multi-label, permitindo que um texto seja classificado em mais de um ramo do direito quando necessário.
+
+## :rocket: Começando
+
+### Pré-requisitos
 
 - Python 3.11+
 - uv (gerenciador de pacotes Python)
 
-### Instalação usando uv (recomendado)
+### Instalação
+
+#### Método 1: Usando uv (recomendado)
 ```bash
 # Instalar uv se ainda não tiver
 pip install uv
@@ -17,37 +24,123 @@ pip install uv
 # Instalar dependências para rodar aplicativo
 uv sync
 
-# Instalar dependências de desensenvolvimento
+# Instalar dependências de desenvolvimento
 uv sync --extra dev
 ```
 
-### Usando Docker
-
-Primeiro vamos construir nosso container:
+#### Método 2: Usando Docker
 ```bash
+# Construir a imagem
 docker build -t legal-text-classifier .
-```
 
-Em seguinda, vamos rodá-lo com o nome `legal-text-api`:
-```bash
+# Executar o container
 docker run -d -p 8000:8000 --name legal-text-api legal-text-classifier
 ```
 
-Uma vez feito isso, a nossa API estará rodando. Podemos testar usando:
-```bash
-curl -s "http://localhost:8000/"
-```
-Isso irá mostrar a documentação da API. Em seguida, para usar o modelo,
-envie um POST:
-```bash
-curl -X POST "http://localhost:8000/api/pecas/1" -H "Content-Type: application/json" -d '{"texto": "AGRAVO EM RECURSO EXTRAORDINÁRIO. DIREITO CONSTITUCIONAL. DIREITO ADMINISTRATIVO. CONCURSO PÚBLICO. POLÍCIA MILITAR. ALTURA MÍNIMA. LEGALIDADE."}'
-```
+## :memo: Como Usar
 
-Terminado o uso, podemos parar a aplicação com:
+### Executando a API
+
+#### Localmente
 ```bash
-docker stop legal-text-api
+# Opção 1: Usando uvicorn (modo desenvolvimento)
+uv run uvicorn app.main:app --reload
+
+# Opção 2: Usando uv (modo produção)
+uv run python -m app.main
 ```
-Finalmente, se não precisar mais do container, delete usando:
+Note que colocando o prefixo `uv run`, garantimos que estamos utilizando
+a versão de python do projeto.
+
+#### Via Docker
 ```bash
+# Iniciar
+docker build -t legal-text-classifier .
+docker run -d -p 8000:8000 --name legal-text-api legal-text-classifier
+```
+Com isso, o container estará rodando a API e já pode ser acessado.
+
+Uma vez que não se quer mais utilizar aquele container, pode deletá-lo usando:
+```bash
+# Parar
+docker stop legal-text-api
+
+# Remover
 docker rm legal-text-api
 ```
+
+### Endpoints Disponíveis
+
+- `GET /`: Documentação da API
+- `POST /api/pecas/{id}`: Classificar um texto jurídico
+
+### Exemplo de Uso
+
+```bash
+# Testar
+curl -s "http://localhost:8000/"
+```
+Retorna:
+```
+{"message":"Bem-vindo à API de Classificação de Textos Jurídicos","endpoints":{"classificar_texto":{"path":"/api/pecas/{id}","method":"POST","description":"Utiliza uma modelo de Machine Learning que classifica o texto jurídico e retorna uma lista com ramos do direito."}}}
+```
+
+Para obter predições se usa:
+```bash
+curl -X POST "http://localhost:8000/api/pecas/1" \
+     -H "Content-Type: application/json" \
+     -d '{"texto": "AGRAVO EM RECURSO EXTRAORDINÁRIO. DIREITO CONSTITUCIONAL. DIREITO ADMINISTRATIVO. CONCURSO PÚBLICO. POLÍCIA MILITAR. ALTURA MÍNIMA. LEGALIDADE."}'
+```
+
+Resposta esperada:
+```json
+{"id":1,"ramo_direito":["DIREITO ADMINISTRATIVO E OUTRAS MATÉRIAS DE DIREITO PÚBLICO"]}%                                                                   
+```
+
+## :building_construction: Estrutura do Projeto
+
+```
+.
+├── app/
+│   ├── main.py                # API principal
+│   ├── text_processing/       # Módulos de processamento de texto
+│   │   ├── cleaner.py         # Funções para limpeza de texto
+│   │   ├── cleaner_batch.py   # Funções para limpeza em batch
+│   │   └── text_processing.py # Script para preprocessamento do dataset
+│   └── modelling/            # Módulos para treinamento e predição
+│       ├── train.py          # Script de treinamento do modelo
+│       └── predict.py        # Funções para fazer predições
+├── data/
+│   ├── 1_raw/                # Dados brutos
+│   └── 2_pro/                # Dados processados
+├── models/                   # Modelos treinados
+└── tests/                    # Testes automatizados
+```
+
+## :wrench: Desenvolvimento
+
+### Pré-processamento dos Dados
+Para processar os dados brutos e preparar para treinamento:
+```bash
+uv run python -m app.text_processing.text_processing
+```
+
+### Treinamento do Modelo
+Para treinar o modelo de classificação:
+```bash
+uv run python -m app.modelling.train
+```
+
+### Testes
+Para executar os testes e obter o percentual de cobertura:
+```bash
+uv run pytest --cov=app
+```
+
+## :notebook: Notas Adicionais
+
+- Os dados não estão no respositório, pois seu tamanho é maior que o limite do GitHub.
+- Os dados originais `dataset_desafio_ramo_direito (1).parquet` recebidos no desafio estão salvos em `data/2_pro/`.
+- Os dados processados são salvos em `data/2_pro/`.
+- Os modelos treinados são salvos em `models/`.
+- A API está disponível em `http://localhost:8000` por padrão.

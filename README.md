@@ -141,6 +141,10 @@ Para executar os testes e obter o percentual de cobertura:
 ```bash
 uv run pytest --cov=app
 ```
+Para saber quais linhas não são cobertas, use:
+```bash
+uv run pytest --cov=app --cov-report=term-missing
+```
 
 ## :notebook: Notas Adicionais
 

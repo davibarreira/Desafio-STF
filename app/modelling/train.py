@@ -18,14 +18,17 @@ from xgboost import XGBClassifier
 from .model_selection import multi_label_prediction
 
 
-def train_model(data_path: str = "data/2_pro/cleaned_dataset.parquet") -> dict:
+def train_model(
+    data_path: str = "data/2_pro/cleaned_dataset.parquet",
+    save_model: bool = True,
+) -> dict:
     """
     Train and evaluate a multi-label classification model and save it to disk.
     Uses the best model configuration from best_model_config.json and the saved vectorizer.
 
     Args:
         data_path: Path to the processed data
-
+        save_model: Whether to save the model to disk
     Returns:
         Dictionary with evaluation metrics
     """
@@ -73,9 +76,10 @@ def train_model(data_path: str = "data/2_pro/cleaned_dataset.parquet") -> dict:
     model.fit(X, y)
 
     # Save the model
-    print(f"Saving model to {model_dir}")
-    with open(f"{model_dir}/model.pkl", "wb") as f:
-        pickle.dump(model, f)
+    if save_model:
+        print(f"Saving model to {model_dir}")
+        with open(f"{model_dir}/model.pkl", "wb") as f:
+            pickle.dump(model, f)
 
     # Get predictions for evaluation
     y_pred, y_pred_proba = multi_label_prediction(model, X)

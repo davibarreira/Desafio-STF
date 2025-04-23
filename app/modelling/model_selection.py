@@ -106,7 +106,14 @@ def get_model_configurations() -> list[dict]:
     ]
 
 
-def train_and_evaluate_model(model_class, config, X_train, y_train, X_val, y_val):
+def train_and_evaluate_model(
+    model_class: type,
+    config: dict,
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
+) -> tuple[MultiOutputClassifier, float, str]:
     """
     Train and evaluate a single model configuration.
 

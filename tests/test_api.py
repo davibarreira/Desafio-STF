@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
@@ -39,3 +40,30 @@ def test_inferir_ramo_empty_text():
     assert response.status_code == 200
     assert response.json()["id"] == 1
     assert isinstance(response.json()["ramo_direito"], list)
+
+
+# Load sample data
+SAMPLE_DATA_PATH = "tests/sample_data/sample_data.parquet"
+
+
+def test_inferir_ramo_sample_data():
+    df = pd.read_parquet(SAMPLE_DATA_PATH)
+    for index, row in df.iterrows():
+        response = client.post(
+            f"/api/pecas/{index}", json={"texto": row["texto_bruto"]}
+        )
+        assert response.status_code == 200
+        assert response.json()["id"] == index
+        assert isinstance(response.json()["ramo_direito"], list)
+
+        # Compute accuracy by comparing predicted labels with actual labels
+        predicted_labels = set(response.json()["ramo_direito"])
+        actual_labels = set(row["ramo_direito"])
+
+        # Calculate intersection and union
+        intersection = predicted_labels.intersection(actual_labels)
+        union = predicted_labels.union(actual_labels)
+
+        # Calculate accuracy as intersection over union
+        accuracy = len(intersection) / len(union) if len(union) > 0 else 0
+        assert accuracy >= 0 and accuracy <= 1

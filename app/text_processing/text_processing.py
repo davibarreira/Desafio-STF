@@ -27,26 +27,7 @@ def process_dataset(
     # Read the raw dataset
     print(f"Reading dataset from {input_path}")
     df = pd.read_parquet(input_path)
-
-    # Identify the text column to clean
-    text_columns = [
-        col for col in df.columns if any(t in col.lower() for t in ["text", "texto"])
-    ]
-
-    if not text_columns:
-        print(
-            "Could not identify a text column. Available columns:", df.columns.tolist()
-        )
-        # If we can't find a column with 'text' in the name, use the first non-ramo_direito column
-        non_ramo_columns = [col for col in df.columns if col != "ramo_direito"]
-        if non_ramo_columns:
-            text_column = non_ramo_columns[0]
-            print(f"Using {text_column} as the text column")
-        else:
-            raise ValueError("Could not identify a text column to clean")
-    else:
-        text_column = text_columns[0]
-        print(f"Using {text_column} as the text column")
+    text_column = "texto_bruto"
 
     # Clean the text column
     print(f"Cleaning text in column '{text_column}'")

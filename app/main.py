@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from app.text_processing import clean_text
+from app.modelling import load_model, predict_labels
 
 app = FastAPI(
     title="STF Text Classification API",
@@ -39,10 +40,8 @@ async def root():
 async def inferir_ramo_direito(texto: str) -> List[str]:
     # Clean the text before processing
     texto_limpo = clean_text(texto)
-
-    # Simulate some async processing (e.g., calling an external API or ML service)
-    await asyncio.sleep(0.1)  # Simulate async work
-    return ["Direito Civil"]
+    predicted_labels = predict_labels([texto_limpo])
+    return predicted_labels
 
 
 @app.post("/api/pecas/{id}", response_model=RamoDireitoResponse)

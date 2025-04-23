@@ -16,7 +16,10 @@ def test_root_endpoint():
 def test_inferir_ramo_success():
     response = client.post("/api/pecas/1", json={"texto": "Texto de exemplo"})
     assert response.status_code == 200
-    assert response.json() == {"id": 1, "ramo_direito": ["Direito Civil"]}
+    response_json = response.json()
+    assert response_json["id"] == 1
+    assert isinstance(response_json["ramo_direito"], list)
+    assert all(isinstance(ramo, str) for ramo in response_json["ramo_direito"])
 
 
 def test_inferir_ramo_invalid_id():

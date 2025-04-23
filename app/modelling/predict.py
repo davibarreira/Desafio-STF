@@ -32,7 +32,9 @@ def load_model(model_dir: Union[str, Path] = "models") -> Dict:
     return {"model": model, "vectorizer": vectorizer, "mlb": mlb}
 
 
-def predict_labels(texts: List[str], model_dir: Union[str, Path] = "models") -> Union[List[str], List[List[str]]]:
+def predict_labels(
+    texts: List[str], model_dir: Union[str, Path] = "models"
+) -> Union[List[str], List[List[str]]]:
     """
     Predict the legal branch labels for the given texts.
 

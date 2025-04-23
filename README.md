@@ -125,8 +125,15 @@ Para processar os dados brutos e preparar para treinamento:
 uv run python -m app.text_processing.text_processing
 ```
 
+### Seleção de Modelo
+Para comparar diferentes modelos e selecionar o melhor com base na métrica f1_samples:
+```bash
+uv run python -m app.modelling.model_selection
+```
+Este script testa vários algoritmos (Regressão Logística, Random Forest, SVM) com diferentes hiperparâmetros e salva a melhor configuração para ser usada no treinamento final.
+
 ### Treinamento do Modelo
-Para treinar o modelo de classificação:
+Para treinar o modelo de classificação usando a melhor configuração encontrada:
 ```bash
 uv run python -m app.modelling.train
 ```

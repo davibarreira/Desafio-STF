@@ -7,7 +7,6 @@ import unicodedata
 from typing import List
 
 import nltk
-import numpy as np
 import spacy
 from nltk.corpus import stopwords
 from tqdm import tqdm

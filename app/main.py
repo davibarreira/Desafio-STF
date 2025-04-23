@@ -4,7 +4,7 @@ from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from app.modelling import load_model, predict_labels
+from app.modelling import predict_labels
 from app.text_processing import clean_text
 
 app = FastAPI(

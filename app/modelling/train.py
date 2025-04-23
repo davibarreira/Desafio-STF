@@ -17,7 +17,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 
 
-def train_model(data_path="data/2_pro/cleaned_dataset.parquet"):
+def train_model(data_path: str = "data/2_pro/cleaned_dataset.parquet") -> dict:
     """
     Train and evaluate a multi-label classification model and save it to disk.
 

@@ -1,10 +1,11 @@
 import pickle
 from pathlib import Path
+from typing import Dict, List, Union
 
 import numpy as np
 
 
-def load_model(model_dir="models"):
+def load_model(model_dir: Union[str, Path] = "models") -> Dict:
     """
     Load the trained model and related artifacts for prediction.
 
@@ -31,7 +32,7 @@ def load_model(model_dir="models"):
     return {"model": model, "vectorizer": vectorizer, "mlb": mlb}
 
 
-def predict_labels(texts, model_dir="models"):
+def predict_labels(texts: List[str], model_dir: Union[str, Path] = "models") -> Union[List[str], List[List[str]]]:
     """
     Predict the legal branch labels for the given texts.
 

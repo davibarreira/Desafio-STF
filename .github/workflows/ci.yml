@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      run: pip install uv
+
+    - name: Install dependencies
+      run: uv sync --extra dev
+
+    - name: Run tests
+      run: uv run pytest --cov=app
+
+    # - name: Run black
+    #   run: uv run black --check app tests
+    
+    # - name: Run isort
+    #   run: uv run isort --check app tests
+
+  # Build job runs after tests pass and only on push events (not PRs)
+  # Uses Docker Buildx to build the container image efficiently
+  # Does not push to any registry, just verifies the build works
+  # Leverages GitHub Actions cache to speed up builds
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: false
+        tags: legal-text-classifier:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max 
+
+    # Debugging steps to see if all files are being copied (commented out)
+    # - name: Debug environment
+    #   run: |
+    #     echo "Current directory structure:"
+    #     ls -la
+    #     echo ""
+    #     echo "App directory structure:"
+    #     ls -la app/
+    #     ls -la tests/

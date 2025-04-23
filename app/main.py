@@ -4,8 +4,8 @@ from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from app.text_processing import clean_text
 from app.modelling import load_model, predict_labels
+from app.text_processing import clean_text
 
 app = FastAPI(
     title="STF Text Classification API",

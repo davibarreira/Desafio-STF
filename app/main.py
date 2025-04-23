@@ -39,7 +39,7 @@ async def root():
 async def inferir_ramo_direito(texto: str) -> List[str]:
     # Clean the text before processing
     texto_limpo = clean_text(texto)
-    
+
     # Simulate some async processing (e.g., calling an external API or ML service)
     await asyncio.sleep(0.1)  # Simulate async work
     return ["Direito Civil"]

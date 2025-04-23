@@ -27,11 +27,11 @@ jobs:
     - name: Run tests
       run: uv run pytest --cov=app
 
-    # - name: Run black
-    #   run: uv run black --check app tests
+    - name: Run black
+      run: uv run black --check app tests
     
-    # - name: Run isort
-    #   run: uv run isort --check app tests
+    - name: Run isort
+      run: uv run isort --check app tests
 
   # Build job runs after tests pass and only on push events (not PRs)
   # Uses Docker Buildx to build the container image efficiently

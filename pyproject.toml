@@ -34,3 +34,6 @@ asyncio_default_fixture_loop_scope = "function"
 
 [tool.uv.sources]
 pt-core-news-sm = { url = "https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.8.0/pt_core_news_sm-3.8.0-py3-none-any.whl" }
+
+[tool.isort]
+profile = "black"
